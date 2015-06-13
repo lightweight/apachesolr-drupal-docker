@@ -1,5 +1,5 @@
-# Apache Solr 4.x & 5.x for Drupal docker image
-==============
+# Apache Solr 4.x & 5.x for Drupal search
+---
 
 Apache Solr 4.x - 5.x docker image for Drupal search.
 
