@@ -2,18 +2,20 @@ FROM java:openjdk-7-jdk
 
 MAINTAINER  Biczó Dezső "mxr576@gmail.com"
 
-EXPOSE 8983
-
+# Update the image.
 RUN apt-get update &&\
-  apt-get -y upgrade &&\
-  apt-get clean
+  apt-get -y upgrade
 
+# Install some additional package.
 RUN export DEBIAN_FRONTEND=noninteractive && \
-  apt-get -y install lsof curl procps screen
+  apt-get -y install git && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
 
 ENV SOLR_VERSION 4.10.4
 ENV SOLR solr-$SOLR_VERSION
 ENV SOLR_MEM_SIZE 512m
+ENV PARTIAL_SEARCH_ENABLED false
 
 # Download Solr.
 RUN mkdir -p /opt && \
@@ -23,9 +25,20 @@ RUN mkdir -p /opt && \
   mv /opt/$SOLR /opt/solr
 
 # Add Drupal schema files.
-RUN wget -nv http://ftp.drupal.org/files/projects/search_api_solr-7.x-1.7.tar.gz && \
-  tar -xvzf  search_api_solr-7.x-* && \
-  cp search_api_solr/solr-conf/4.x/* /opt/solr/example/solr/collection1/conf && \
-  rm -rf ./apachesolr*
+RUN git clone --branch 7.x-1.x http://git.drupal.org/project/search_api_solr.git && \
+  cp search_api_solr/solr-conf/4.x/* /opt/solr/example/solr/collection1/conf
 
-CMD ["/bin/bash", "-c", "screen /opt/solr/bin/solr -f -m $SOLR_MEM_SIZE"]
+# Add partial search schema.
+ADD ./partial_search partial_search
+
+# Add start script.
+ADD run.sh /run.sh
+
+# Add executable right to the file.
+RUN chmod +x /run.sh
+
+VOLUME ["/opt/solr/example/solr/collection1/data", "/opt/solr/example/solr/collection1/conf"]
+
+EXPOSE 8983
+
+CMD ["/run.sh"]
