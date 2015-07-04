@@ -1,6 +1,6 @@
 FROM java:openjdk-7-jdk
 
-MAINTAINER  Biczó Dezső "mxr576@gmail.com"
+MAINTAINER Dezső BICZÓ "mxr576@gmail.com"
 
 # Update the image.
 RUN apt-get update &&\
