@@ -34,4 +34,12 @@ Solr 5.x
 docker run -id -p 8983:8983 -e SOLR_MEM_SIZE=1g -v path_on_the_host:/opt/solr/server/solr/drupal/data -t drupal-solr
 ```
 
+If you would like to use the Solr's built in partial search function, then this is available on the 4.x image:
+
+Solr 4.x:
+
+```sh
+docker run -id -p 8983:8983 -e SOLR_MEM_SIZE=1g -e PARTIAL_SEARCH_ENABLED=true -v path_on_the_host:/opt/solr/example/solr/collection1/data -t drupal-solr
+```
+
 **HINT**: When you use the Solr 5.x version then the "Solr path" has to be set to `/solr/drupal` instead of `/solr` on Search API server settings page!
