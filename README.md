@@ -1,7 +1,7 @@
 # Apache Solr 4.x & 5.x for Drupal search
 ---
 
-Apache Solr 4.x - 5.x docker image for Drupal search.
+Apache Solr 4.x - 5.x Docker image for Drupal search.
 
 ### How to use these images:
 
@@ -34,12 +34,15 @@ Solr 5.x
 docker run -id -p 8983:8983 -e SOLR_MEM_SIZE=1g -v path_on_the_host:/opt/solr/server/solr/drupal/data -t drupal-solr
 ```
 
-If you would like to use the Solr's built in partial search function, then this is available on the 4.x image:
-
-Solr 4.x:
+If you would like to use the Solr's built in partial search function, then this is available in the 4.x image:
 
 ```sh
 docker run -id -p 8983:8983 -e SOLR_MEM_SIZE=1g -e PARTIAL_SEARCH_ENABLED=true -v path_on_the_host:/opt/solr/example/solr/collection1/data -t drupal-solr
 ```
 
+(Working on the 5.x implementation too.)
+
 **HINT**: When you use the Solr 5.x version then the "Solr path" has to be set to `/solr/drupal` instead of `/solr` on Search API server settings page!
+
+### Credits
+Thanks for @Coornail the base image, that I've modified and extended.
