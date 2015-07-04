@@ -2,16 +2,17 @@ FROM java:openjdk-7-jdk
 
 MAINTAINER  Biczó Dezső "mxr576@gmail.com"
 
-EXPOSE 8983
-
+# Update the image.
 RUN apt-get update &&\
-  apt-get -y upgrade &&\
-  apt-get clean
+  apt-get -y upgrade
 
+# Install some additional package.
 RUN export DEBIAN_FRONTEND=noninteractive && \
-  apt-get -y install lsof curl procps screen
+  apt-get -y install git && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
 
-ENV SOLR_VERSION 5.2.0
+ENV SOLR_VERSION 5.2.1
 ENV SOLR solr-$SOLR_VERSION
 ENV SOLR_MEM_SIZE 512m
 
@@ -23,14 +24,18 @@ RUN mkdir -p /opt && \
   mv /opt/$SOLR /opt/solr
 
 # Add Drupal schema files.
-RUN wget -nv http://ftp.drupal.org/files/projects/search_api_solr-7.x-1.7.tar.gz && \
-  tar -xvzf search_api_solr-7.x-* && \
+RUN git clone --branch 7.x-1.x http://git.drupal.org/project/search_api_solr.git && \
   mkdir -p /opt/solr/server/solr/drupal/conf && \   
   cp search_api_solr/solr-conf/5.x/* /opt/solr/server/solr/drupal/conf && \
   rm -rf ./search_api_solr*
 
 # Create a Drupal Solr core.
 RUN /opt/solr/bin/solr start && \
+  sleep 10 && \
   /opt/solr/bin/solr create -c drupal -d /opt/solr/server/solr/drupal
 
-CMD ["/bin/bash", "-c", "screen /opt/solr/bin/solr start -f -m $SOLR_MEM_SIZE"]
+VOLUME ["/opt/solr/server/solr/drupal/data", "/opt/solr/server/solr/drupal/conf"]
+
+EXPOSE 8983
+
+CMD ["/bin/bash", "-c", "/opt/solr/bin/solr start -f -m $SOLR_MEM_SIZE"]
