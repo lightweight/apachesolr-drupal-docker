@@ -1,5 +1,5 @@
 solr:
-  build: .
+  image: mxr576/apachesolr-5.x-drupal-docker
   hostname: solr
   environment:
     - SOLR_SOLR_MEM_SIZE=512m
@@ -9,7 +9,7 @@ solr:
   volumes_from:
     - solr_data
 solr_data:
-  build: .
+  image: mxr576/apachesolr-5.x-drupal-docker
   command: echo "Data only container for the Apache Solr container."
   volumes:
     - /opt/solr/example/solr/collection1/data
