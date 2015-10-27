@@ -8,13 +8,14 @@ RUN apt-get update &&\
 
 # Install some additional package.
 RUN export DEBIAN_FRONTEND=noninteractive && \
-  apt-get -y install git && \
+  apt-get -y install git lsof supervisor && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
-ENV SOLR_VERSION 5.2.1
+ENV SOLR_VERSION 5.3.1
 ENV SOLR solr-$SOLR_VERSION
 ENV SOLR_MEM_SIZE 512m
+ENV PARTIAL_SEARCH_ENABLED false
 
 # Download Solr.
 RUN mkdir -p /opt && \
@@ -25,17 +26,27 @@ RUN mkdir -p /opt && \
 
 # Add Drupal schema files.
 RUN git clone --branch 7.x-1.x http://git.drupal.org/project/search_api_solr.git && \
-  mkdir -p /opt/solr/server/solr/drupal/conf && \   
-  cp search_api_solr/solr-conf/5.x/* /opt/solr/server/solr/drupal/conf && \
+  mkdir -p /srv/solr/schemas/default && \
+  mkdir -p /srv/solr/schemas/partial_search && \
+  cp search_api_solr/solr-conf/5.x/* /srv/solr/schemas/default && \
+  cp search_api_solr/solr-conf/5.x/* /srv/solr/schemas/partial_search && \
+  rm -f /srv/solr/schemas/partial_search/schema.xml && \
   rm -rf ./search_api_solr*
 
-# Create a Drupal Solr core.
-RUN /opt/solr/bin/solr start && \
-  sleep 10 && \
-  /opt/solr/bin/solr create -c drupal -d /opt/solr/server/solr/drupal
+# Add partial search schema.
+ADD ./partial_search/schema.xml /srv/solr/schemas/partial_search/schema.xml
 
-VOLUME ["/opt/solr/server/solr/drupal/data", "/opt/solr/server/solr/drupal/conf"]
+# Add supervisord config.
+ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Add start script.
+ADD run.sh /run.sh
+
+# Add executable right to the file.
+RUN chmod +x /run.sh
+
+VOLUME ["/opt/solr/server/solr/drupal/data", "/opt/solr/server/solr/drupal/conf", "/var/log/supervisor/"]
 
 EXPOSE 8983
 
-CMD ["/bin/bash", "-c", "/opt/solr/bin/solr start -f -m $SOLR_MEM_SIZE"]
+CMD ["/bin/bash", "-c", "/run.sh"]
