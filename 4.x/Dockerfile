@@ -8,7 +8,7 @@ RUN apt-get update &&\
 
 # Install some additional package.
 RUN export DEBIAN_FRONTEND=noninteractive && \
-  apt-get -y install git && \
+  apt-get -y install git lsof supervisor && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
@@ -24,12 +24,21 @@ RUN mkdir -p /opt && \
   rm /opt/$SOLR.tgz && \
   mv /opt/$SOLR /opt/solr
 
-# Add Drupal schema files.
+# Add Search API Solr schema files.
 RUN git clone --branch 7.x-1.x http://git.drupal.org/project/search_api_solr.git && \
-  cp search_api_solr/solr-conf/4.x/* /opt/solr/example/solr/collection1/conf
+  mkdir -p /srv/solr/schemas/default && \
+  mkdir -p /srv/solr/schemas/partial_search && \
+  cp search_api_solr/solr-conf/4.x/* /srv/solr/schemas/default && \
+  cp search_api_solr/solr-conf/4.x/* /srv/solr/schemas/partial_search && \
+  rm -f /srv/solr/schemas/partial_search/schema.xml && \
+  rm -rf ./search_api_solr* && \
+  rm -rf /opt/solr/example/solr/collection1/conf
 
 # Add partial search schema.
-ADD ./partial_search partial_search
+ADD ./partial_search/schema.xml /srv/solr/schemas/partial_search/schema.xml
+
+# Add supervisord config.
+ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Add start script.
 ADD run.sh /run.sh
@@ -37,8 +46,8 @@ ADD run.sh /run.sh
 # Add executable right to the file.
 RUN chmod +x /run.sh
 
-VOLUME ["/opt/solr/example/solr/collection1/data", "/opt/solr/example/solr/collection1/conf"]
+VOLUME ["/opt/solr/example/solr/collection1/data", "/opt/solr/example/solr/collection1/conf", "/var/log/supervisor/"]
 
 EXPOSE 8983
 
-CMD ["/run.sh"]
+CMD ["/bin/bash", "-c", "/run.sh"]

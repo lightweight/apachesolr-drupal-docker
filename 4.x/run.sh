@@ -1,12 +1,14 @@
 #!/bin/bash
 
-rm -f /opt/solr/example/solr/collection1/conf/schema.xml
-
-# Check if partial search function should be enabled.
-if [ "${PARTIAL_SEARCH_ENABLED}" == "false" ]; then
-	cp search_api_solr/solr-conf/4.x/schema.xml /opt/solr/example/solr/collection1/conf/schema.xml
-else
-	cp partial_search/schema.xml /opt/solr/example/solr/collection1/conf/schema.xml
+# On the first run, we need to copy the selected configurition files.
+if [ ! -f /opt/solr/example/solr/collection1/conf/.installed ]; then
+	# Check, if partial search function should be enabled on text fields.
+	if [ "${PARTIAL_SEARCH_ENABLED}" == "false" ]; then
+		cp /srv/solr/schemas/default/* /opt/solr/example/solr/collection1/conf
+	else
+		cp /srv/solr/schemas/partial_search/* /opt/solr/example/solr/collection1/conf
+	fi
+	touch /opt/solr/example/solr/collection1/conf/.installed
 fi
 
-exec /opt/solr/bin/solr -f -m ${SOLR_MEM_SIZE}
+/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
