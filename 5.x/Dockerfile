@@ -2,12 +2,9 @@ FROM java:openjdk-7-jdk
 
 MAINTAINER Dezső BICZÓ "mxr576@gmail.com"
 
-# Update the image.
-RUN apt-get update &&\
-  apt-get -y upgrade
-
 # Install some additional package.
 RUN export DEBIAN_FRONTEND=noninteractive && \
+  apt-get update && \
   apt-get -y install git lsof supervisor && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
@@ -24,7 +21,7 @@ RUN mkdir -p /opt && \
   rm /opt/$SOLR.tgz && \
   mv /opt/$SOLR /opt/solr
 
-# Add Drupal schema files.
+# Add Search API Solr schema files.
 RUN git clone --branch 7.x-1.x http://git.drupal.org/project/search_api_solr.git && \
   mkdir -p /srv/solr/schemas/default && \
   mkdir -p /srv/solr/schemas/partial_search && \
@@ -34,10 +31,10 @@ RUN git clone --branch 7.x-1.x http://git.drupal.org/project/search_api_solr.git
   rm -rf ./search_api_solr*
 
 # Add partial search schema.
-ADD ./partial_search/schema.xml /srv/solr/schemas/partial_search/schema.xml
+COPY ./partial_search/schema.xml /srv/solr/schemas/partial_search/schema.xml
 
 # Add supervisord config.
-ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Add start script.
 ADD run.sh /run.sh
