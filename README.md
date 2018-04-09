@@ -12,7 +12,7 @@ cd apachesolr-drupal-docker
 Choose your version and open its folder, for example, if you choosed the 4.x version:
 
 ```sh
-docker build -t mxr576/apachesolr-5.x-drupal-docker .
+docker build -t mxr576/apachesolr-4.x-drupal-docker .
 docker run -id -p 8983:8983 -t mxr576/apachesolr-4.x-drupal-docker
 ```
 
